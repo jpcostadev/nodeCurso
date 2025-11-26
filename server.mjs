@@ -1,4 +1,21 @@
+import { promises } from "node:dns";
 import { createServer } from "node:http";
+
+const frase1 = Promise.resolve("Olá");
+const frase2 = Promise.resolve("Mundo");
+const frasesPromisses = [frase1, frase2];
+const frases = [];
+
+for await (const frase of frasesPromisses) {
+  frases.push(frase);
+}
+// console.log(frases.join(" "));
+
+const part1 = Buffer.from("Olá");
+const part2 = Buffer.from("Mundo");
+const final = Buffer.concat([part1, part2]);
+
+console.log(final.toString("utf-8"));
 
 const server = createServer((req, res) => {
   res.setHeader("Content-Type", "text/plain");
