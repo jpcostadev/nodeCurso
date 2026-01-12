@@ -1,1 +1,0 @@
-node --no-warnings --watch server.mjs
