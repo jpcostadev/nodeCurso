@@ -9,30 +9,48 @@ const frases = [];
 for await (const frase of frasesPromisses) {
   frases.push(frase);
 }
-// console.log(frases.join(" "));
 
-const part1 = Buffer.from("Olá");
+const part1 = Buffer.from("Olá ");
 const part2 = Buffer.from("Mundo");
 const final = Buffer.concat([part1, part2]);
 
-console.log(final.toString("utf-8"));
+// console.log(final);
+// console.log(final.toString("utf-8"));
 
-const server = createServer((req, res) => {
-  res.setHeader("Content-Type", "text/plain");
+const server = createServer(async (req, res) => {
+  // res.setHeader("Content-Type", "text/plain");
   res.statusCode = 200;
 
-  const url = new URL(req.url, "http://localhost:3000");
+  const url = new URL(req.url, "http://localhost");
+
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type",
+    "Authorization",
+  );
+
   const cor = url.searchParams.get("cor");
   const tamanho = url.searchParams.get("tamanho");
-  console.log(req.headers["content-type"]);
+  // console.log(req.headers["content-type"]);
 
-  console.log(url);
   if (req.method === "GET" && url.pathname === "/") {
     res.statusCode = 200;
-    res.end("Home");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.end(`
+      <html>
+        <head>
+          <title>Mundo</title>
+        </head>
+        <body>
+          <h1>Olá Mundo</h1>
+        </body>
+      </html>
+      `);
   } else if (req.method === "POST" && url.pathname === "/produtos") {
+    res.setHeader("Content-Type", "application/json");
     res.statusCode = 201;
-    res.end(`Produto ${cor}, ${tamanho}`);
+    // res.end(`Produto ${cor}, ${tamanho}`);
+    res.end(JSON.stringify({ nome: "Notebook" }));
   } else {
     res.statusCode = 404;
     res.end("Página não encontrada");

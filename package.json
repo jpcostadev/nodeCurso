@@ -1,5 +1,11 @@
 {
   "devDependencies": {
-    "@types/node": "^24.10.1"
+    "@types/node": "^24.10.1",
+    "nodemon": "^3.1.11"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "nodemon server.mjs",
+    "client": "node client.mjs"
   }
 }
