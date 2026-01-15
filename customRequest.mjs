@@ -5,12 +5,12 @@ export async function customRequest(req) {
   const chunks = [];
 
   for await (const chunk of req) {
-    chunk.push();
+    chunks.push(chunk);
   }
 
-  const body = Buffer.contat(chunks).toString("utf-8");
+  const body = Buffer.concat(chunks).toString("utf-8");
   if (req.headers["content-type"] === "application/json") {
-    req.body = JSON.parse(req.body);
+    req.body = body ? JSON.parse(body) : null;
   } else {
     req.body = body;
   }
