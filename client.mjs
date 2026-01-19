@@ -1,71 +1,43 @@
-const notebookResponse = await fetch(
-  "http://localhost:3000/produto?categoria=eletronicos&slug=notebook",
-  {
-    method: "GET",
-    // headers: {
-    //   "Content-Type": "application/json",
-    // },
-    // body: JSON.stringify({
-    //   nome: "Notebook",
-    //   slug: "notebook",
-    //   categoria: "eletronicos",
-    //   preco: 4000,
-    // }),
+const base = "http://localhost:3000";
+
+await fetch(base + "/cursos", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
   },
+  body: JSON.stringify({
+    slug: "html",
+    nome: "HTML",
+    descricao: "Curso de HTML",
+  }),
+});
+
+await fetch(base + "/aulas", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    slug: "variaveis",
+    nome: "Variáveis",
+    cursoSlug: "javascript",
+  }),
+});
+
+const cursos = await fetch(base + "/cursos").then((r) => r.json());
+
+// console.log(cursos);
+
+const curso = await fetch(base + "/curso?slug=html").then((r) => r.json());
+
+// console.log(curso);
+
+const aulas = await fetch(base + "/aulas?curso=html").then((r) => r.json());
+
+// console.log(aulas);
+
+const aula = await fetch(base + "/aula?curso=html&slug=semantica").then((r) =>
+  r.json(),
 );
 
-const produtosResp = await fetch("http://localhost:3000/produtos", {
-  method: "GET",
-  // headers: {
-  //   "Content-Type": "application/json",
-  // },
-  // body: JSON.stringify({
-  //   nome: "Notebook",
-  //   slug: "notebook",
-  //   categoria: "eletronicos",
-  //   preco: 4000,
-  // }),
-});
-const produtos = await produtosResp.json();
-console.log(produtos);
-
-const response = await fetch("http://localhost:3000/produtos", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    nome: "Notebook",
-    slug: "notebook",
-    categoria: "eletronicos",
-    preco: 4000,
-  }),
-});
-// const body = await response.text();
-// console.log(body);
-
-await fetch("http://localhost:3000/produtos", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    nome: "Mesa",
-    slug: "mesa",
-    categoria: "moveis",
-    preco: 4000,
-  }),
-});
-
-await fetch("http://localhost:3000/produtos", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    nome: "Mouse",
-    slug: "mouse",
-    categoria: "eletronicos",
-    preco: 200,
-  }),
-});
+console.log(aula);
