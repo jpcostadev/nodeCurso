@@ -1,2 +1,4 @@
 node --no-warnings --watch server.mjs
 node --no-warnings --watch client.mjs
+
+dentro da pasta vscode no config temos que mostrar a pasta estudo
