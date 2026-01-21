@@ -1,10 +1,13 @@
-import { DatabaseSync } from "node:sqlite";
+import { DatabaseSync, type StatementSync } from "node:sqlite";
 
 const db = new DatabaseSync("./lms.sqlite");
 
 export class Database extends DatabaseSync {
+  queries: Record<string, StatementSync>;
+
   constructor(path: string) {
     super(path);
+    this.queries = {};
     this.exec(/*sql */ `
     PRAGMA foreign_keys = 1;
      PRAGMA journal_mode = DELETE;
@@ -14,5 +17,13 @@ export class Database extends DatabaseSync {
      PRAGMA busy_timeout = 5000;
      PRAGMA temp_store = MEMORY;
       `);
+  }
+
+  query(sql: string) {
+    console.log(this.queries);
+    if (!this.queries[sql]) {
+      this.queries[sql] = this.prepare(sql);
+    }
+    return this.queries[sql];
   }
 }
