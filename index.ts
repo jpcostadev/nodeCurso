@@ -17,85 +17,132 @@ core.init();
  * O QUE ESSE ARQUIVO FAZ?
  * ============================================================================
  *
- * Esse é o arquivo principal! É por aqui que tudo começa
- * Aqui você configura o servidor e registra todas as rotas da sua API
+ * Esse é o arquivo principal (entry point) da aplicação!
+ * É por aqui que tudo começa - configura o servidor e organiza as APIs
  *
  * ----------------------------------------------------------------------------
  * COMO FUNCIONA (PASSO A PASSO)
  * ----------------------------------------------------------------------------
- * 1. Cria o servidor:
+ * 1. Cria o Core:
  *    const core = new Core()
- *    (Isso cria o servidor HTTP e o sistema de rotas)
+ *    Isso cria:
+ *    - Servidor HTTP
+ *    - Router (sistema de rotas)
+ *    - Database (banco SQLite)
+ *    - Registra bodyJson como middleware global automaticamente
  *
- * 2. Registra as rotas:
- *    core.router.get("/", ...)  <- rota GET
- *    core.router.post("/", ...) <- rota POST
- *    (Aqui você diz: "quando acessarem essa URL, faça isso")
+ * 2. Registra middlewares globais (opcional):
+ *    core.router.use([logger])
+ *    Esses middlewares rodam em TODAS as rotas
  *
- * 3. Inicia o servidor:
+ * 3. Cria e inicializa APIs:
+ *    new ProductApi(core).init()
+ *    Isso:
+ *    - Cria as tabelas do banco (método tables())
+ *    - Registra as rotas (método routes())
+ *    - Organiza tudo de forma modular
+ *
+ * 4. Inicia o servidor:
  *    core.init()
- *    (Agora o servidor começa a escutar na porta 3000)
+ *    Agora o servidor escuta na porta 3000
  *
  * ----------------------------------------------------------------------------
- * ROTAS QUE ESTÃO REGISTRADAS
+ * ESTRUTURA DO FRAMEWORK
  * ----------------------------------------------------------------------------
+ * O framework está organizado assim:
  *
- * GET /curso/:slug
- *   Busca um curso pelo slug
- *   Exemplo: GET /curso/javascript
- *   - req.params.slug vai ter "javascript"
- *   - Busca o curso no banco
- *   - Retorna 200 com os dados se encontrar
- *   - Retorna 404 se não encontrar
+ * core/ - Código principal do framework
+ *   - core.ts - Classe Core (servidor + router + database)
+ *   - router.ts - Sistema de rotas
+ *   - database.ts - Wrapper do SQLite com cache de queries
+ *   - http/ - Customizações de Request/Response
+ *   - middleware/ - Middlewares prontos (bodyJson, logger)
+ *   - utils/ - Utilitários (RouteError, Api abstract)
  *
- * GET /curso/:curso/deletar
- *   (Rota de exemplo com parâmetro dinâmico)
- *   Exemplo: GET /curso/javascript/deletar
- *   - req.params.curso vai ter "javascript"
+ * api/ - Suas APIs organizadas por módulo
+ *   - products/ - API de produtos
+ *     - index.ts - ProductApi (estende Api)
  *
- * GET /aula/:aula
- *   (Rota de exemplo)
- *   Exemplo: GET /aula/javascript
- *   - req.params.aula vai ter "javascript"
- *   - Retorna "aula"
+ * ----------------------------------------------------------------------------
+ * COMO CRIAR UMA NOVA API
+ * ----------------------------------------------------------------------------
+ * 1. Crie uma classe que estende Api:
+ *    export class MinhaApi extends Api {
+ *      handlers = {
+ *        meuHandler: (req, res) => { ... }
+ *      }
+ *
+ *      tables() {
+ *        // Cria tabelas aqui
+ *        this.core.db.exec(`CREATE TABLE ...`)
+ *      }
+ *
+ *      routes() {
+ *        // Registra rotas aqui
+ *        this.core.router.get("/rota", this.handlers.meuHandler)
+ *      }
+ *    }
+ *
+ * 2. No index.ts, inicialize:
+ *    new MinhaApi(core).init()
+ *
+ * ----------------------------------------------------------------------------
+ * ROTAS ATUAIS (ProductApi)
+ * ----------------------------------------------------------------------------
+ * GET /products/:slug
+ *   Busca um produto pelo slug
+ *   Exemplo: GET /products/notebook
+ *   - req.params.slug = "notebook"
+ *   - Busca no banco usando core.db.query()
+ *   - Retorna 200 com dados ou 404 se não encontrar
  *
  * GET /
- *   Rota raiz (página inicial)
- *   Exemplo: GET /
- *   - Retorna "hello"
+ *   Rota raiz
+ *   - Retorna "Hello World"
  *
  * ----------------------------------------------------------------------------
- * O QUE SÃO PARÂMETROS DINÂMICOS?
+ * MIDDLEWARES GLOBAIS
  * ----------------------------------------------------------------------------
- * Quando você coloca ":" na rota, aquela parte vira um parâmetro
+ * bodyJson - Já registrado automaticamente no Core
+ *   Lê o body JSON das requisições POST/PUT
+ *
+ * logger - Registrado manualmente
+ *   Loga todas as requisições
+ *
+ * ----------------------------------------------------------------------------
+ * TRATAMENTO DE ERROS
+ * ----------------------------------------------------------------------------
+ * O Core tem um try/catch que captura erros:
+ * - Se for RouteError: retorna JSON com status e mensagem
+ * - Se for outro erro: retorna 500 (erro interno)
+ * - Todos os erros são logados no console
+ *
+ * Use assim nos handlers:
+ *   throw new RouteError(404, "Não encontrado")
+ *
+ * ----------------------------------------------------------------------------
+ * BANCO DE DADOS
+ * ----------------------------------------------------------------------------
+ * O Core já cria uma instância do Database
+ * Acesse via: core.db
+ *
+ * Métodos úteis:
+ *   - core.db.exec(sql) - Executa SQL direto
+ *   - core.db.query(sql) - Prepara e cacheia uma query
+ *   - core.db.prepare(sql) - Prepara uma query (sem cache)
  *
  * Exemplo:
- *   Rota: "/curso/:slug"
- *   URL acessada: "/curso/javascript"
- *
- *   O que acontece:
- *   - O router vê que ":slug" é um parâmetro
- *   - Pega o valor "javascript" da URL
- *   - Coloca em req.params.slug = "javascript"
- *   - Agora você pode usar req.params.slug na sua função
- *
- * Outro exemplo:
- *   Rota: "/curso/:curso/aula/:aula"
- *   URL: "/curso/javascript/aula/1"
- *   req.params = { curso: "javascript", aula: "1" }
- *
- * ----------------------------------------------------------------------------
- * DICAS IMPORTANTES
- * ----------------------------------------------------------------------------
- * - Sempre chame core.init() DEPOIS de registrar todas as rotas
- * - O servidor roda na porta 3000
- * - Acesse em: http://localhost:3000
- * - Para testar, use o arquivo client.mjs ou um programa como Postman
+ *   const product = core.db
+ *     .query(`SELECT * FROM products WHERE slug = ?`)
+ *     .get(slug)
  *
  * ----------------------------------------------------------------------------
  * RESUMO
  * ----------------------------------------------------------------------------
- * Esse arquivo: cria servidor -> registra rotas -> inicia servidor
- * Rotas com ":" têm parâmetros dinâmicos (ex: /curso/:slug)
- * Parâmetros ficam em req.params (ex: req.params.slug)
+ * index.ts = ponto de entrada da aplicação
+ * Core = servidor + router + database (criado automaticamente)
+ * ProductApi = exemplo de como organizar uma API
+ * Use Api abstract para criar novas APIs organizadas
+ * Middlewares globais rodam em todas as rotas
+ * RouteError para erros HTTP customizados
  */

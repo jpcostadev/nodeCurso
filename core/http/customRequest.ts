@@ -40,13 +40,13 @@ export async function customRequest(request: IncomingMessage) {
  * pathname - Só o caminho da URL, sem os parâmetros
  *   Exemplo: /curso?slug=javascript -> pathname é "/curso"
  *
- * body - O corpo da requisição (quando você envia dados no POST)
- *   Se for JSON, já vem parseado (convertido em objeto)
- *   Se não for JSON, fica vazio {}
+ * body - O corpo da requisição (preenchido pelo middleware bodyJson depois)
+ *   Inicializado como {} vazio aqui
+ *   O middleware bodyJson vai ler e parsear se for JSON
  *
  * params - Os parâmetros dinâmicos da rota (preenchido pelo router depois)
- *   Exemplo: Rota "/curso/:curso" com URL "/curso/javascript"
- *   -> params fica { curso: "javascript" }
+ *   Exemplo: Rota "/products/:slug" com URL "/products/notebook"
+ *   -> params fica { slug: "notebook" }
  *
  * ----------------------------------------------------------------------------
  * FUNÇÃO customRequest() - O QUE ELA FAZ?
@@ -60,18 +60,18 @@ export async function customRequest(request: IncomingMessage) {
  *   2. Inicializa params como vazio {}
  *      (O router vai preencher depois quando encontrar parâmetros dinâmicos)
  *
- *   3. Lê o corpo da requisição (se tiver)
- *      Como pode vir em pedaços, junta tudo primeiro
+ *   3. Inicializa body como vazio {}
+ *      (O middleware bodyJson vai preencher depois se for JSON)
  *
- *   4. Se o corpo for JSON, converte pra objeto
- *      Se não for JSON, deixa vazio
- *
- *   5. Retorna a requisição toda arrumada e pronta pra usar
+ *   4. Retorna a requisição toda arrumada e pronta pra usar
+ *      O body será preenchido pelo middleware bodyJson depois
  *
  * ----------------------------------------------------------------------------
  * RESUMO SIMPLES
  * ----------------------------------------------------------------------------
  * customRequest = pega requisição complicada e deixa fácil de usar
- * Adiciona: query, pathname, body, params
+ * Adiciona: query, pathname, body (vazio), params (vazio)
+ * body será preenchido pelo middleware bodyJson depois
+ * params será preenchido pelo router depois
  * Você só precisa usar req.query, req.pathname, etc. sem se preocupar com detalhes
  */
