@@ -15,21 +15,8 @@ export async function customRequest(request: IncomingMessage) {
   const url = new URL(req.url || "", "http://localhost");
   req.query = url.searchParams;
   req.pathname = url.pathname;
-
   req.params = {};
-
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) {
-    chunks.push(chunk);
-  }
-
-  const body = Buffer.concat(chunks).toString("utf-8");
-
-  if (req.headers["content-type"] === "application/json") {
-    req.body = body ? JSON.parse(body) : null;
-  } else {
-    req.body = {};
-  }
+  req.body = {};
 
   return req;
 }

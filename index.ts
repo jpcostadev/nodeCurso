@@ -1,35 +1,41 @@
 import { Core } from "./core/core.ts";
-import { pegarCurso } from "./core/database.ts";
+import { bodyJson } from "./core/middleware/bodyJson.ts";
+import { logger } from "./core/middleware/logger.ts";
+import { RouteError } from "./core/utils/routeError.ts";
 
 const core = new Core();
 
-core.router.get("/curso/:slug", (req, res) => {
+core.db.exec(/*sql */ `
+  CREATE TABLE IF NOT EXISTS "products" (
+    "id" INTEGER NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL, 
+    "slug" TEXT NOT NULL UNIQUE,
+    "price" INTEGER
+  );
+  INSERT OR IGNORE INTO "products"
+  ("name" ,"slug", "price") VALUES
+  ( 'Notebook', 'notebook', 4000)
+  `);
+
+core.router.use([logger]);
+
+core.router.get("/products/:slug", (req, res) => {
   const { slug } = req.params;
-  const curso = pegarCurso(slug);
-  if (curso) {
-    res.status(200).json(curso);
-  } else {
-    res.status(404).json("Curso não encontrado");
+  const product = core.db
+    .prepare(
+      /*sql */ `
+    SELECT * FROM "products" WHERE "slug" = ?
+    `,
+    )
+    .get(slug);
+  if (!product) {
+    throw new RouteError(404, "Produto não encontrado");
   }
-});
-
-core.router.get("/curso/:curso/deletar", (req, res) => {
-  const slug = req.params.curso;
-  const curso = pegarCurso(slug);
-
-  if (curso) {
-    res.status(200).json(curso);
-  } else {
-    res.status(404).json("curso não encontrado");
-  }
-});
-
-core.router.get("/aula/:aula", (req, res) => {
-  res.status(200).end("aula");
+  res.status(200).json(product);
 });
 
 core.router.get("/", (req, res) => {
-  res.status(200).end("hello");
+  res.status(200).json("Hello World");
 });
 
 core.init();
@@ -94,7 +100,7 @@ core.init();
  * Exemplo:
  *   Rota: "/curso/:slug"
  *   URL acessada: "/curso/javascript"
- *   
+ *
  *   O que acontece:
  *   - O router vê que ":slug" é um parâmetro
  *   - Pega o valor "javascript" da URL
