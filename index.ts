@@ -1,14 +1,15 @@
 import { ProductApi } from "./api/products/index.ts";
 import { Core } from "./core/core.ts";
-import { bodyJson } from "./core/middleware/bodyJson.ts";
 import { logger } from "./core/middleware/logger.ts";
-import { RouteError } from "./core/utils/routeError.ts";
+import { AuthApi } from "./api/auth/index.ts";
+import { LmshApi } from "./api/lms/index.ts";
 
 const core = new Core();
 
 core.router.use([logger]);
 
-new ProductApi(core).init();
+new AuthApi(core).init();
+new LmshApi(core).init();
 
 core.init();
 

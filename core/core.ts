@@ -33,7 +33,7 @@ export class Core {
 
       const matched = this.router.find(req.method || "", req.pathname);
       if (!matched) {
-        throw new RouteError(404, "Não Encontrada");
+        throw new RouteError(404, "Rota não Encontrada");
       }
 
       const { route, params } = matched;

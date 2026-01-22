@@ -20,17 +20,18 @@ export class ProductApi extends Api {
   } satisfies Api["handlers"];
 
   tables(): void {
-    this.core.db.exec(/*sql */ `
-          CREATE TABLE IF NOT EXISTS "products" (
-            "id" INTEGER NOT NULL PRIMARY KEY,
-            "name" TEXT NOT NULL, 
-            "slug" TEXT NOT NULL UNIQUE,
-            "price" INTEGER
-          );
-          INSERT OR IGNORE INTO "products"
-          ("name" ,"slug", "price") VALUES
-          ( 'Notebook', 'notebook', 4000)
-          `);
+    this.core.db.exec(/*sql*/ `DROP TABLE "products"`);
+    // this.core.db.exec(/*sql */ `
+    //       CREATE TABLE IF NOT EXISTS "products" (
+    //         "id" INTEGER NOT NULL PRIMARY KEY,
+    //         "name" TEXT NOT NULL,
+    //         "slug" TEXT NOT NULL UNIQUE,
+    //         "price" INTEGER
+    //       );
+    //       INSERT OR IGNORE INTO "products"
+    //       ("name" ,"slug", "price") VALUES
+    //       ( 'Notebook', 'notebook', 4000)
+    //       `);
   }
   routes(): void {
     this.core.router.get("/products/:slug", this.handlers.getProdutcs);
