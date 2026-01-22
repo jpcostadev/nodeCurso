@@ -1,3 +1,4 @@
+import { title } from "process";
 import { Api } from "../../core/utils/abstract.ts";
 import { RouteError } from "../../core/utils/routeError.ts";
 import { lmsTable } from "./lmsTable.ts";
@@ -143,6 +144,41 @@ export class LmshApi extends Api {
       const next = nav.at(index + 1)?.slug ?? null;
       res.status(200).json({ ...lesson, prev, next });
     },
+
+    /*
+     * ============================================================================
+     * HANDLER completeLesson - MARCAR AULA COMO COMPLETA
+     * ============================================================================
+     *
+     * Registra que um usuário completou uma aula específica.
+     * Rota: POST /lms/lesson/complete
+     * Body: { courseId, lessonId }
+     * Retorna: { title: "Aula concluída" }
+     * Erro: 404 se não conseguir marcar como completa
+     * Nota: userId está hardcoded como 1 (deve ser obtido da sessão/autenticação)
+     */
+    completeLesson: (req, res) => {
+      try {
+        const userId = 1; // TODO: Obter do sistema de autenticação/sessão
+        const { courseId, lessonId } = req.body;
+        const writeResult = this.query.insertLessonCompleted(
+          userId,
+          courseId,
+          lessonId,
+        );
+        if (writeResult.changes === 0) {
+          throw new RouteError(
+            400,
+            "Erro ao completar a aula. Aula já pode estar completa.",
+          );
+        }
+        res.status(201).json({ title: "Aula concluída" });
+      } catch (erro) {
+        res.status(400).json({
+          title: "Erro ao completar aula",
+        });
+      }
+    },
   } satisfies Api["handlers"];
 
   /*
@@ -175,6 +211,7 @@ export class LmshApi extends Api {
       "/lms/lesson/:courseSlug/:lessonSlug",
       this.handlers.getLesson,
     );
+    this.router.post("/lms/lesson/complete", this.handlers.completeLesson);
   }
 }
 

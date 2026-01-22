@@ -167,6 +167,29 @@ export class LmsQuery extends Query {
       )
       .all(lessonSlug) as { slug: string }[];
   }
+
+  /*
+   * ============================================================================
+   * MÉTODO insertLessonCompleted() - MARCAR AULA COMO COMPLETA
+   * ============================================================================
+   *
+   * Registra que um usuário completou uma aula específica.
+   * Parâmetros: userId (number), courseId (number), lessonId (number)
+   * Retorna: Resultado da execução (com changes e lastInsertRowid)
+   * Usa: INSERT OR IGNORE (não duplica se já estiver completa)
+   * Cache: Não (usa .prepare() sem cache)
+   */
+  insertLessonCompleted(userId: number, courseId: number, lessonId: number) {
+    return this.db
+      .prepare(
+        /*sql*/ `
+        INSERT OR IGNORE INTO "lessons_completed" 
+        ("user_id", "course_id", "lesson_id") 
+        VALUES (?,?,?)
+      `,
+      )
+      .run(userId, courseId, lessonId);
+  }
 }
 
 /*
