@@ -115,8 +115,14 @@ export class LmshApi extends Api {
       if (!course) {
         throw new RouteError(404, "Curso não encontrado.");
       }
+      const userId = 1;
+      let completed: { lesson_id: number; completed: string }[] = [];
+      if (userId) {
+        completed = this.query.selectLessonsCompleted(userId, course.id);
+      }
+
       const lessons = this.query.selectLessons(slug);
-      res.status(200).json({ course, lessons });
+      res.status(200).json({ course, lessons, completed });
     },
 
     /*
@@ -142,7 +148,20 @@ export class LmshApi extends Api {
       const index = nav.findIndex((l) => l.slug === lesson.slug);
       const prev = index === 0 ? null : nav.at(index - 1)?.slug;
       const next = nav.at(index + 1)?.slug ?? null;
-      res.status(200).json({ ...lesson, prev, next });
+
+      const userId = 1;
+      let completed = "";
+      if (userId) {
+        const lessonCompleteed = this.query.selectLessonCompleted(
+          userId,
+          lesson.id,
+        );
+        if (lessonCompleteed) {
+          completed = lessonCompleteed.completed;
+        }
+      }
+
+      res.status(200).json({ ...lesson, prev, next, completed });
     },
 
     /*
@@ -179,6 +198,16 @@ export class LmshApi extends Api {
         });
       }
     },
+
+    resetCourse: (req, res) => {
+      const userId = 1;
+      const { courseId } = req.body;
+      const writeResult = this.query.deleteLessonCompleted(userId, courseId);
+      if (writeResult.changes === 0) {
+        throw new RouteError(400, "Erro ao resetar curso");
+      }
+      res.status(201).json("curso resetado");
+    },
   } satisfies Api["handlers"];
 
   /*
@@ -207,6 +236,7 @@ export class LmshApi extends Api {
     this.router.post("/lms/lesson", this.handlers.postLesson);
     this.router.get("/lms/courses", this.handlers.getCourses);
     this.router.get("/lms/course/:slug", this.handlers.getCourse);
+    this.router.delete("/lms/course/reset", this.handlers.resetCourse);
     this.router.get(
       "/lms/lesson/:courseSlug/:lessonSlug",
       this.handlers.getLesson,

@@ -136,7 +136,7 @@ const functions = {
    * Retorna: { course: {...}, lessons: [...] }
    */
   async getCourse() {
-    const response = await fetch(base + "/lms/course/javascript-completo", {
+    const response = await fetch(base + "/lms/course/html-e-css", {
       method: "GET",
     });
     const body = await response.json();
@@ -155,12 +155,9 @@ const functions = {
    * Retorna: { ...lesson, prev: slug | null, next: slug | null }
    */
   async getLesson() {
-    const response = await fetch(
-      base + "/lms/lesson/javascript-completo/funcoes-basico",
-      {
-        method: "GET",
-      },
-    );
+    const response = await fetch(base + "/lms/lesson/html-e-css/tags-basicas", {
+      method: "GET",
+    });
     const body = await response.json();
     console.log(body);
   },
@@ -185,6 +182,19 @@ const functions = {
       body: JSON.stringify({
         courseId: 1,
         lessonId: 1,
+      }),
+    });
+    const body = await response.json();
+    console.log(body);
+  },
+  async resetCourse() {
+    const response = await fetch(base + "/lms/course/reset", {
+      method: "DELETE",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        courseId: 1,
       }),
     });
     const body = await response.json();

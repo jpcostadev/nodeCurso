@@ -195,7 +195,6 @@ export class LmsQuery extends Query {
       .prepare(
         /*sql*/ `
         SELECT "completed" FROM "lessons_completed" WHERE "user_id" = ? AND "lesson_id" = ?
-        VALUES (?,?)
       `,
       )
       .get(userId, lessonId) as { completed: string } | undefined;
@@ -205,10 +204,9 @@ export class LmsQuery extends Query {
       .prepare(
         /*sql*/ `
         SELECT "lesson_id", "completed" FROM "lessons_completed" WHERE "user_id" = ? AND "course_id" = ?
-        VALUES (?,?)
       `,
       )
-      .all(userId, courseId) as { lesson_id: number; completed: string } | [];
+      .all(userId, courseId) as { lesson_id: number; completed: string }[];
   }
   deleteLessonCompleted(userId: number, courseId: number) {
     return this.db
