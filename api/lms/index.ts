@@ -16,6 +16,7 @@ export class LmshApi extends Api {
      * Rota: POST /lms/course
      * Body: { slug, title, description, lessons, hours }
      * Retorna: { id, changes, title: "curso criado com sucesso" }
+     * Status: 200
      * Erro: 400 se não conseguir criar
      */
     postCourse: (req, res) => {
@@ -46,6 +47,7 @@ export class LmshApi extends Api {
      * Rota: POST /lms/lesson
      * Body: { courseSlug, slug, title, seconds, video, description, order, free }
      * Retorna: { id, changes, title: "aula criada" }
+     * Status: 200
      * Erro: 400 se não conseguir criar
      */
     postLesson: (req, res) => {
@@ -133,7 +135,7 @@ export class LmshApi extends Api {
      * Busca uma aula específica e retorna com informações de navegação (prev/next).
      * Rota: GET /lms/lesson/:courseSlug/:lessonSlug
      * Parâmetros: courseSlug, lessonSlug (na URL)
-     * Retorna: { ...lesson, prev: slug | null, next: slug | null }
+     * Retorna: { ...lesson, prev: slug | null, next: slug | null, completed }
      * Erro: 404 se a aula não for encontrada
      */
     getLesson: (req, res) => {
@@ -173,8 +175,9 @@ export class LmshApi extends Api {
      * Rota: POST /lms/lesson/complete
      * Body: { courseId, lessonId }
      * Retorna: { title: "Aula concluída" }
-     * Erro: 404 se não conseguir marcar como completa
-     * Nota: userId está hardcoded como 1 (deve ser obtido da sessão/autenticação)
+     * Status: 201
+     * Erro: 400 se não conseguir marcar como completa
+     * Nota: userId está hardcoded como 1 (deve vir da sessão/autenticação)
      */
     completeLesson: (req, res) => {
       try {
@@ -199,6 +202,19 @@ export class LmshApi extends Api {
       }
     },
 
+    /*
+     * ============================================================================
+     * HANDLER resetCourse - RESETAR PROGRESSO DO CURSO
+     * ============================================================================
+     *
+     * Remove todas as aulas concluídas de um curso para um usuário.
+     * Rota: DELETE /lms/course/reset
+     * Body: { courseId }
+     * Retorna: "curso resetado"
+     * Status: 201
+     * Erro: 400 se não conseguir resetar
+     * Nota: userId está hardcoded como 1 (deve vir da sessão/autenticação)
+     */
     resetCourse: (req, res) => {
       const userId = 1;
       const { courseId } = req.body;
@@ -287,7 +303,19 @@ export class LmshApi extends Api {
  * getCourse - Busca um curso pelo slug
  *   Rota: GET /lms/course/:slug
  *   Parâmetros: slug (na URL)
- *   Retorna: Objeto do curso ou erro 404 se não encontrar
+ *   Retorna: { course, lessons, completed } ou erro 404 se não encontrar
+ *
+ * getLesson - Busca uma aula pelo slug
+ *   Rota: GET /lms/lesson/:courseSlug/:lessonSlug
+ *   Retorna: Aula + navegação (prev/next)
+ *
+ * completeLesson - Marca aula como concluída
+ *   Rota: POST /lms/lesson/complete
+ *   Body: { courseId, lessonId }
+ *
+ * resetCourse - Reseta progresso do curso
+ *   Rota: DELETE /lms/course/reset
+ *   Body: { courseId }
  *
  * ----------------------------------------------------------------------------
  * ROTAS REGISTRADAS
@@ -297,6 +325,9 @@ export class LmshApi extends Api {
  * POST /lms/lesson - Criar aula
  * GET /lms/courses - Listar todos os cursos
  * GET /lms/course/:slug - Buscar curso por slug
+ * GET /lms/lesson/:courseSlug/:lessonSlug - Buscar aula
+ * POST /lms/lesson/complete - Marcar aula como concluída
+ * DELETE /lms/course/reset - Resetar progresso
  *
  * ----------------------------------------------------------------------------
  * COMO USAR

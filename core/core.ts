@@ -123,7 +123,7 @@ export class Core {
  *
  *   4. Procura qual rota deve ser executada
  *      Usa router.find() pra achar a função certa
- *      Se não achar, lança RouteError(404, "Não Encontrada")
+ *      Se não achar, lança RouteError(404, "Rota não Encontrada")
  *
  *   5. Se achou a rota:
  *      - Extrai route e params: const { route, params } = matched
@@ -135,8 +135,8 @@ export class Core {
  *
  *   6. Se der erro:
  *      - Se for RouteError: retorna JSON com status e mensagem
- *        Formato: { status: 404, title: "Não Encontrada" }
- *        Content-Type: application/problem+json
+ *        Formato: { status: 404, title: "Rota não Encontrada" }
+ *        Content-Type: application/problem+json (RFC 7807)
  *      - Se for outro erro: retorna 500 (erro interno)
  *      - Todos os erros são logados no console
  *

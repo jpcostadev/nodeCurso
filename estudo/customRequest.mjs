@@ -1,3 +1,10 @@
+/*
+ * ============================================================================
+ * CUSTOM REQUEST (ESTUDO)
+ * ============================================================================
+ *
+ * Normaliza a requisição HTTP para facilitar acesso a query, pathname e body.
+ */
 export async function customRequest(req) {
   const url = new URL(req.url, "http://localhost");
   req.query = url.searchParams;

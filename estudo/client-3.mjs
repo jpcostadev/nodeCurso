@@ -1,3 +1,10 @@
+/*
+ * ============================================================================
+ * CLIENTE DE TESTE (ESTUDO) - CURSOS/AULAS
+ * ============================================================================
+ *
+ * Script de testes para endpoints do server-3.mjs.
+ */
 const base = "http://localhost:3000";
 
 await fetch(base + "/cursos", {

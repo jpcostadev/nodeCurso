@@ -1,3 +1,10 @@
+/*
+ * ============================================================================
+ * CLIENTE DE TESTE (ESTUDO) - PRODUTOS
+ * ============================================================================
+ *
+ * Script de testes para endpoints do server-2.mjs.
+ */
 const notebookResponse = await fetch(
   "http://localhost:3000/produto?categoria=eletronicos&slug=notebook",
   {

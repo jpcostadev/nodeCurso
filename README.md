@@ -8,6 +8,7 @@ Um framework simples e poderoso para criar APIs REST em Node.js com TypeScript, 
 - [Instalação](#instalação)
 - [Início Rápido](#início-rápido)
 - [Estrutura do Projeto](#estrutura-do-projeto)
+- [Pasta de Estudo e Scripts](#pasta-de-estudo-e-scripts)
 - [Conceitos Fundamentais](#conceitos-fundamentais)
 - [Criando uma API](#criando-uma-api)
 - [Sistema de Rotas](#sistema-de-rotas)
@@ -15,6 +16,10 @@ Um framework simples e poderoso para criar APIs REST em Node.js com TypeScript, 
 - [Middlewares](#middlewares)
 - [Tratamento de Erros](#tratamento-de-erros)
 - [Exemplos Completos](#exemplos-completos)
+- [APIs Incluídas](#apis-incluídas)
+- [Rotas do LMS](#rotas-do-lms)
+- [Rotas de Autenticação](#rotas-de-autenticação)
+- [Observações Importantes](#observações-importantes)
 - [API Reference](#api-reference)
 
 ## ✨ Características
@@ -26,7 +31,7 @@ Um framework simples e poderoso para criar APIs REST em Node.js com TypeScript, 
 - 🔌 **Middlewares**: Sistema flexível de middlewares globais e por rota
 - 📝 **TypeScript**: Totalmente tipado para melhor desenvolvimento
 - ⚡ **Performance**: Cache automático de queries preparadas
-- 🎯 **Zero Dependencies**: Apenas Node.js e TypeScript
+- 🎯 **Sem Dependências de Runtime**: Apenas Node.js e TypeScript (dev deps opcionais)
 
 ## 📦 Instalação
 
@@ -37,7 +42,7 @@ Um framework simples e poderoso para criar APIs REST em Node.js com TypeScript, 
 npm install
 ```
 
-3. Certifique-se de ter Node.js 18+ instalado
+3. Certifique-se de ter Node.js 22+ instalado (usa `node:sqlite`)
 
 ## 🚀 Início Rápido
 
@@ -45,12 +50,14 @@ npm install
 
 ```typescript
 import { Core } from "./core/core.ts";
-import { MinhaApi } from "./api/minha-api/index.ts";
+import { AuthApi } from "./api/auth/index.ts";
+import { LmshApi } from "./api/lms/index.ts";
 
 const core = new Core();
 
 // Registre suas APIs
-new MinhaApi(core).init();
+new AuthApi(core).init();
+new LmshApi(core).init();
 
 // Inicie o servidor
 core.init();
@@ -66,18 +73,22 @@ import { RouteError } from "../../core/utils/routeError.ts";
 export class MinhaApi extends Api {
   handlers = {
     buscar: (req, res) => {
-      const item = this.db.query(`SELECT * FROM items WHERE id = ?`).get(req.params.id);
+      const item = this.db
+        .query(`SELECT * FROM items WHERE id = ?`)
+        .get(req.params.id);
       if (!item) {
         throw new RouteError(404, "Item não encontrado");
       }
       res.status(200).json(item);
     },
-    
+
     criar: (req, res) => {
       const { name, description } = req.body;
-      const result = this.db.query(`INSERT INTO items (name, description) VALUES (?, ?)`).run(name, description);
+      const result = this.db
+        .query(`INSERT INTO items (name, description) VALUES (?, ?)`)
+        .run(name, description);
       res.status(201).json({ id: result.lastInsertRowid });
-    }
+    },
   };
 
   tables() {
@@ -100,7 +111,7 @@ export class MinhaApi extends Api {
 ### 3. Executar
 
 ```bash
-npm run dev
+npx tsx --watch index.ts
 ```
 
 O servidor estará rodando em `http://localhost:3000`
@@ -126,15 +137,23 @@ projeto/
 │   ├── products/            # API de produtos
 │   ├── auth/               # API de autenticação
 │   └── lms/                 # API de LMS
+├── estudo/                  # Arquivos de estudo e protótipos
+├── client.js                # Cliente de teste via CLI
 ├── index.ts                 # Arquivo principal
 └── README.md                # Esta documentação
 ```
+
+## 🧪 Pasta de Estudo e Scripts
+
+- `estudo/`: protótipos e versões simplificadas do servidor/rotas.
+- `client.js`: utilitário de testes via linha de comando para a API atual.
 
 ## 🎓 Conceitos Fundamentais
 
 ### Core
 
 O `Core` é o coração do framework. Ele coordena:
+
 - **Servidor HTTP**: Escuta requisições na porta 3000
 - **Router**: Gerencia todas as rotas
 - **Database**: Conexão com SQLite
@@ -150,9 +169,15 @@ A classe `Api` fornece uma estrutura organizada para criar APIs:
 
 ```typescript
 export class MinhaApi extends Api {
-  handlers = { /* seus handlers */ };
-  tables() { /* cria tabelas */ }
-  routes() { /* registra rotas */ }
+  handlers = {
+    /* seus handlers */
+  };
+  tables() {
+    /* cria tabelas */
+  }
+  routes() {
+    /* registra rotas */
+  }
 }
 ```
 
@@ -166,8 +191,8 @@ handlers = {
     // req contém: query, pathname, body, params
     // res contém: status(), json()
     res.status(200).json({ message: "Sucesso" });
-  }
-}
+  },
+};
 ```
 
 ## 🛠️ Criando uma API
@@ -180,10 +205,10 @@ import { Api } from "../../core/utils/abstract.ts";
 export class MinhaApi extends Api {
   // Seus handlers aqui
   handlers = {};
-  
+
   // Criação de tabelas
   tables() {}
-  
+
   // Registro de rotas
   routes() {}
 }
@@ -197,7 +222,7 @@ handlers = {
     const items = this.db.prepare(`SELECT * FROM items`).all();
     res.json(items);
   },
-  
+
   buscar: (req, res) => {
     const { id } = req.params;
     const item = this.db.query(`SELECT * FROM items WHERE id = ?`).get(id);
@@ -206,42 +231,50 @@ handlers = {
     }
     res.json(item);
   },
-  
+
   criar: (req, res) => {
     const { name, description } = req.body;
-    const result = this.db.query(`
+    const result = this.db
+      .query(
+        `
       INSERT INTO items (name, description) VALUES (?, ?)
-    `).run(name, description);
-    
+    `,
+      )
+      .run(name, description);
+
     res.status(201).json({ id: result.lastInsertRowid });
   },
-  
+
   atualizar: (req, res) => {
     const { id } = req.params;
     const { name, description } = req.body;
-    
-    const result = this.db.query(`
+
+    const result = this.db
+      .query(
+        `
       UPDATE items SET name = ?, description = ? WHERE id = ?
-    `).run(name, description, id);
-    
+    `,
+      )
+      .run(name, description, id);
+
     if (result.changes === 0) {
       throw new RouteError(404, "Item não encontrado");
     }
-    
+
     res.json({ message: "Atualizado com sucesso" });
   },
-  
+
   deletar: (req, res) => {
     const { id } = req.params;
     const result = this.db.query(`DELETE FROM items WHERE id = ?`).run(id);
-    
+
     if (result.changes === 0) {
       throw new RouteError(404, "Item não encontrado");
     }
-    
+
     res.status(204).end();
-  }
-}
+  },
+};
 ```
 
 ### Passo 3: Criar tabelas
@@ -394,15 +427,23 @@ const item = this.db.query(`SELECT * FROM items WHERE id = ?`).get(id);
 const items = this.db.prepare(`SELECT * FROM items`).all();
 
 // Criar
-const result = this.db.query(`
+const result = this.db
+  .query(
+    `
   INSERT INTO items (name, description) VALUES (?, ?)
-`).run(name, description);
+`,
+  )
+  .run(name, description);
 const newId = result.lastInsertRowid;
 
 // Atualizar
-const result = this.db.query(`
+const result = this.db
+  .query(
+    `
   UPDATE items SET name = ? WHERE id = ?
-`).run(newName, id);
+`,
+  )
+  .run(newName, id);
 
 // Deletar
 const result = this.db.query(`DELETE FROM items WHERE id = ?`).run(id);
@@ -442,7 +483,7 @@ import type { Middleware } from "../router.ts";
 export const meuMiddleware: Middleware = (req, res) => {
   // Faça algo antes do handler
   console.log(`${req.method} ${req.pathname}`);
-  
+
   // Você pode modificar req ou res
   // Você pode interromper a execução (não chamar o próximo)
 };
@@ -505,14 +546,117 @@ handlers = {
   buscar: (req, res) => {
     const { id } = req.params;
     const item = this.db.query(`SELECT * FROM items WHERE id = ?`).get(id);
-    
+
     if (!item) {
       throw new RouteError(404, "Item não encontrado");
     }
-    
+
     res.json(item);
-  }
+  },
+};
+```
+
+## ✅ Rotas Atuais
+
+Rotas registradas no `index.ts` deste projeto:
+
+### Auth
+
+**POST /auth/user**
+
+Body:
+
+```json
+{
+  "name": "Pedro",
+  "username": "fallz",
+  "email": "fallz@email.com",
+  "password": "123456"
 }
+```
+
+Resposta:
+
+```json
+{ "title": "Usuário criado com sucesso" }
+```
+
+### LMS
+
+**POST /lms/course**
+
+Body:
+
+```json
+{
+  "slug": "js-do-zero",
+  "title": "JavaScript do Zero",
+  "description": "Curso completo",
+  "lessons": 20,
+  "hours": 10
+}
+```
+
+**POST /lms/lesson**
+
+Body:
+
+```json
+{
+  "courseSlug": "js-do-zero",
+  "slug": "aula-1",
+  "title": "Introdução",
+  "seconds": 600,
+  "video": "https://exemplo.com/video",
+  "description": "Bem-vindo",
+  "order": 1,
+  "free": 1
+}
+```
+
+**GET /lms/courses**
+
+Retorna lista de cursos ou 404 se não houver.
+
+**GET /lms/course/:slug**
+
+Retorna:
+
+```json
+{
+  "course": { "id": 1, "slug": "js-do-zero" },
+  "lessons": [{ "id": 1, "slug": "aula-1" }],
+  "completed": [{ "lesson_id": 1, "completed": "2026-01-28 12:00:00" }]
+}
+```
+
+**GET /lms/lesson/:courseSlug/:lessonSlug**
+
+Retorna a aula com navegação:
+
+```json
+{
+  "slug": "aula-1",
+  "prev": null,
+  "next": "aula-2",
+  "completed": "2026-01-28 12:00:00"
+}
+```
+
+**POST /lms/lesson/complete**
+
+Body:
+
+```json
+{ "courseId": 1, "lessonId": 1 }
+```
+
+**DELETE /lms/course/reset**
+
+Body:
+
+```json
+{ "courseId": 1 }
 ```
 
 ## 📚 Exemplos Completos
@@ -527,26 +671,34 @@ export class ProductApi extends Api {
   handlers = {
     buscar: (req, res) => {
       const { slug } = req.params;
-      const product = this.db.query(`
+      const product = this.db
+        .query(
+          `
         SELECT * FROM products WHERE slug = ?
-      `).get(slug);
-      
+      `,
+        )
+        .get(slug);
+
       if (!product) {
         throw new RouteError(404, "Produto não encontrado");
       }
-      
+
       res.json(product);
     },
-    
+
     criar: (req, res) => {
       const { name, slug, price } = req.body;
-      
-      const result = this.db.query(`
+
+      const result = this.db
+        .query(
+          `
         INSERT INTO products (name, slug, price) VALUES (?, ?, ?)
-      `).run(name, slug, price);
-      
+      `,
+        )
+        .run(name, slug, price);
+
       res.status(201).json({ id: result.lastInsertRowid });
-    }
+    },
   };
 
   tables() {
@@ -577,18 +729,22 @@ export class ProductQuery extends Query {
   selectBySlug(slug: string) {
     return this.db.query(`SELECT * FROM products WHERE slug = ?`).get(slug);
   }
-  
+
   insert(name: string, slug: string, price: number) {
-    return this.db.query(`
+    return this.db
+      .query(
+        `
       INSERT INTO products (name, slug, price) VALUES (?, ?, ?)
-    `).run(name, slug, price);
+    `,
+      )
+      .run(name, slug, price);
   }
 }
 
 // api/products/index.ts
 export class ProductApi extends Api {
   query = new ProductQuery(this.db);
-  
+
   handlers = {
     buscar: (req, res) => {
       const product = this.query.selectBySlug(req.params.slug);
@@ -596,12 +752,192 @@ export class ProductApi extends Api {
         throw new RouteError(404, "Produto não encontrado");
       }
       res.json(product);
-    }
+    },
   };
-  
+
   // ...
 }
 ```
+
+## 📦 APIs Incluídas
+
+Atualmente, `index.ts` registra estas APIs:
+
+- `AuthApi` (autenticação básica)
+- `LmshApi` (LMS: cursos, aulas e progresso)
+
+`ProductApi` existe como exemplo de estudo, mas **não é inicializada** no `index.ts`.
+
+## 🎓 Rotas do LMS
+
+Base: `/lms`
+
+### POST `/lms/course`
+
+Cria um curso.
+
+Body:
+
+```json
+{
+  "slug": "javascript-completo",
+  "title": "JavaScript Completo",
+  "description": "Curso completo",
+  "lessons": 80,
+  "hours": 20
+}
+```
+
+Resposta 200:
+
+```json
+{
+  "id": 1,
+  "changes": 1,
+  "title": "curso criado com sucesso"
+}
+```
+
+### POST `/lms/lesson`
+
+Cria uma aula vinculada a um curso.
+
+Body:
+
+```json
+{
+  "courseSlug": "javascript-completo",
+  "slug": "introducao",
+  "title": "Introdução",
+  "seconds": 600,
+  "video": "https://...",
+  "description": "Primeira aula",
+  "order": 1,
+  "free": 1
+}
+```
+
+Resposta 200:
+
+```json
+{
+  "id": 1,
+  "changes": 1,
+  "title": "aula criada"
+}
+```
+
+### GET `/lms/courses`
+
+Lista cursos. Se não houver cursos, retorna 404 com `"Nenhum curso encontrdo."`.
+
+### GET `/lms/course/:slug`
+
+Retorna um curso e suas aulas:
+
+```json
+{
+  "course": { "id": 1, "slug": "javascript-completo" },
+  "lessons": [
+    /* aulas */
+  ],
+  "completed": [
+    /* aulas completadas pelo usuário */
+  ]
+}
+```
+
+Observação: `userId` está fixo como `1` no código atual.
+
+### GET `/lms/lesson/:courseSlug/:lessonSlug`
+
+Retorna detalhes de uma aula e navegação:
+
+```json
+{
+  "id": 10,
+  "slug": "introducao",
+  "prev": null,
+  "next": "variaveis",
+  "completed": "2026-01-28 10:00:00"
+}
+```
+
+Observação: `userId` está fixo como `1` no código atual.
+
+### POST `/lms/lesson/complete`
+
+Marca aula como concluída.
+
+Body:
+
+```json
+{
+  "courseId": 1,
+  "lessonId": 10
+}
+```
+
+Resposta 201:
+
+```json
+{
+  "title": "Aula concluída"
+}
+```
+
+### DELETE `/lms/course/reset`
+
+Reseta o progresso do curso (para `userId` fixo).
+
+Body:
+
+```json
+{
+  "courseId": 1
+}
+```
+
+Resposta 201:
+
+```json
+"curso resetado"
+```
+
+## 🔐 Rotas de Autenticação
+
+Base: `/auth`
+
+### POST `/auth/user`
+
+Cria um usuário.
+
+Body:
+
+```json
+{
+  "name": "Pedro",
+  "username": "fallz",
+  "email": "fallz@email.com",
+  "password": "123456"
+}
+```
+
+Resposta 201:
+
+```json
+{
+  "title": "Usuário criado com sucesso"
+}
+```
+
+Observação: no código atual, o campo `password_hash` recebe a senha **sem hash**.
+
+## ✅ Observações Importantes
+
+- O `LmshApi` cria tabelas que dependem de `users`, então `AuthApi` deve ser inicializada antes.
+- `ProductApi` é um exemplo e não está registrada no `index.ts`.
+- `bodyJson` só processa `Content-Type: application/json`.
 
 ## 📖 API Reference
 
@@ -612,9 +948,9 @@ class Core {
   router: Router;
   server: Server;
   db: Database;
-  
+
   constructor();
-  init(port?: number): void;
+  init(): void;
 }
 ```
 
@@ -624,14 +960,14 @@ class Core {
 class Router {
   routes: Routes;
   middlewares: Middleware[];
-  
+
   get(route: string, handler: Handler, middlewares?: Middleware[]): void;
   post(route: string, handler: Handler, middlewares?: Middleware[]): void;
   put(route: string, handler: Handler, middlewares?: Middleware[]): void;
   delete(route: string, handler: Handler, middlewares?: Middleware[]): void;
   head(route: string, handler: Handler, middlewares?: Middleware[]): void;
   use(middlewares: Middleware[]): void;
-  find(method: string, pathname: string): { route, params } | null;
+  find(method: string, pathname: string): { route; params } | null;
 }
 ```
 
@@ -640,7 +976,7 @@ class Router {
 ```typescript
 class Database extends DatabaseSync {
   queries: Record<string, StatementSync>;
-  
+
   constructor(path: string);
   query(sql: string): StatementSync;
   // Herda: exec(), prepare()
@@ -652,7 +988,7 @@ class Database extends DatabaseSync {
 ```typescript
 abstract class Api extends CoreProvider {
   handlers: Record<string, Handler>;
-  
+
   tables(): void;
   routes(): void;
   init(): void;
@@ -699,14 +1035,16 @@ interface CustomResponse extends ServerResponse {
 ## 📝 Notas
 
 - O servidor roda na porta 3000 por padrão
-- O banco SQLite é criado automaticamente no caminho especificado
+- O banco SQLite é criado automaticamente no caminho `./lms.sqlite`
 - bodyJson é registrado automaticamente como middleware global
 - Todas as rotas não encontradas retornam 404 automaticamente
 - Erros são capturados e retornados como JSON (RFC 7807)
+- Nos endpoints de progresso do LMS, o `userId` está fixo em 1 (placeholder)
 
 ## 🤝 Contribuindo
 
 Este é um framework em desenvolvimento. Sinta-se livre para:
+
 - Reportar bugs
 - Sugerir melhorias
 - Adicionar funcionalidades

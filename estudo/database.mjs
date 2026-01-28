@@ -1,3 +1,10 @@
+/*
+ * ============================================================================
+ * BANCO DE DADOS (ESTUDO)
+ * ============================================================================
+ *
+ * Implementa operações básicas para cursos e aulas usando SQLite.
+ */
 import { DatabaseSync } from "node:sqlite";
 
 const db = new DatabaseSync("./lms.sqlite");

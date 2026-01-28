@@ -1,3 +1,14 @@
+/*
+ * ============================================================================
+ * SQL DE TABELAS DE AUTENTICAÇÃO
+ * ============================================================================
+ *
+ * Define a estrutura da tabela "users".
+ *
+ * Observação sobre "updated":
+ * - O valor padrão é CURRENT_TIMESTAMP na criação.
+ * - Para refletir alterações, atualize esse campo manualmente no UPDATE.
+ */
 export const authTables = /*sql*/ `
         CREATE TABLE IF NOT EXISTS "users" (
         "id" INTEGER PRIMARY KEY,

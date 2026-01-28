@@ -1,3 +1,10 @@
+/*
+ * ============================================================================
+ * CUSTOM RESPONSE (ESTUDO)
+ * ============================================================================
+ *
+ * Adiciona helpers simples para status e JSON.
+ */
 export function customResponse(res) {
   res.status = (statusCode) => {
     res.statusCode = statusCode;

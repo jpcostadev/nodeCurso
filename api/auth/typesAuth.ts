@@ -1,3 +1,10 @@
+/*
+ * ============================================================================
+ * TIPOS DE AUTENTICAÇÃO
+ * ============================================================================
+ *
+ * Tipos usados no cadastro de usuários.
+ */
 export type UserRole = "admin" | "editor" | "user";
 
 export type UserData = {

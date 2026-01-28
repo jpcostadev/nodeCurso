@@ -1,3 +1,10 @@
+/*
+ * ============================================================================
+ * SERVIDOR DE ESTUDO (ARQUIVOS)
+ * ============================================================================
+ *
+ * Exemplo simples de API com arquivos locais e rotas manuais.
+ */
 import { promises } from "node:dns";
 import { createServer } from "node:http";
 import { Router } from "./router.mjs";

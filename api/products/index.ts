@@ -63,13 +63,9 @@ export class ProductApi extends Api {
  * Cada handler é uma função que recebe req e res
  *
  * MÉTODO tables():
- * Cria as tabelas do banco de dados
- * Nesse caso, cria a tabela "products" com:
- *   - id (INTEGER PRIMARY KEY - auto-increment)
- *   - name (TEXT NOT NULL)
- *   - slug (TEXT NOT NULL UNIQUE)
- *   - price (INTEGER)
- * Também insere um produto inicial (Notebook)
+ * Atualmente está configurado para resetar a tabela "products"
+ * (executa DROP TABLE). A criação/seed está comentada e pode ser
+ * reativada quando for usar esse módulo como exemplo.
  *
  * MÉTODO routes():
  * Registra todas as rotas da API de produtos
@@ -101,9 +97,8 @@ export class ProductApi extends Api {
  *   new ProductApi(core).init()
  *
  * Isso vai:
- *   1. Criar a tabela products (se não existir)
- *   2. Inserir produto inicial (se não existir)
- *   3. Registrar as rotas
+ *   1. Executar o método tables() deste módulo
+ *   2. Registrar as rotas
  *
  * ----------------------------------------------------------------------------
  * ROTAS DISPONÍVEIS

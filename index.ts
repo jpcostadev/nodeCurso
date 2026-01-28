@@ -37,7 +37,8 @@ core.init();
  *    Esses middlewares rodam em TODAS as rotas
  *
  * 3. Cria e inicializa APIs:
- *    new ProductApi(core).init()
+ *    new AuthApi(core).init()
+ *    new LmshApi(core).init()
  *    Isso:
  *    - Cria as tabelas do banco (método tables())
  *    - Registra as rotas (método routes())
@@ -61,8 +62,9 @@ core.init();
  *   - utils/ - Utilitários (RouteError, Api abstract)
  *
  * api/ - Suas APIs organizadas por módulo
- *   - products/ - API de produtos
- *     - index.ts - ProductApi (estende Api)
+ *   - auth/ - API de autenticação
+ *   - lms/ - API de cursos (LMS)
+ *   - products/ - API de produtos (exemplo)
  *
  * ----------------------------------------------------------------------------
  * COMO CRIAR UMA NOVA API
@@ -88,18 +90,31 @@ core.init();
  *    new MinhaApi(core).init()
  *
  * ----------------------------------------------------------------------------
- * ROTAS ATUAIS (ProductApi)
+ * ROTAS ATUAIS (AuthApi + LmshApi)
  * ----------------------------------------------------------------------------
- * GET /products/:slug
- *   Busca um produto pelo slug
- *   Exemplo: GET /products/notebook
- *   - req.params.slug = "notebook"
- *   - Busca no banco usando core.db.query()
- *   - Retorna 200 com dados ou 404 se não encontrar
+ * POST /auth/user
+ *   Cria um usuário
  *
- * GET /
- *   Rota raiz
- *   - Retorna "Hello World"
+ * POST /lms/course
+ *   Cria um curso
+ *
+ * POST /lms/lesson
+ *   Cria uma aula
+ *
+ * GET /lms/courses
+ *   Lista cursos
+ *
+ * GET /lms/course/:slug
+ *   Detalha curso + aulas
+ *
+ * GET /lms/lesson/:courseSlug/:lessonSlug
+ *   Detalha aula + navegação
+ *
+ * POST /lms/lesson/complete
+ *   Marca aula como concluída
+ *
+ * DELETE /lms/course/reset
+ *   Reseta progresso de um curso
  *
  * ----------------------------------------------------------------------------
  * MIDDLEWARES GLOBAIS
