@@ -31,6 +31,15 @@ export type LessonCreate = Omit<LessonData, "course_id" | "id" | "created"> & {
   courseSlug: string;
 };
 
+export type CertificateFullData = {
+  id: string;
+  name: string;
+  title: string;
+  hours: number;
+  lessons: number;
+  completed: string;
+};
+
 /*
  * ============================================================================
  * TIPOS DO LMS (LEARNING MANAGEMENT SYSTEM)

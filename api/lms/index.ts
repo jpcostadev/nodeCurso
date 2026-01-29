@@ -194,9 +194,24 @@ export class LmshApi extends Api {
             "Erro ao completar a aula. Aula já pode estar completa.",
           );
         }
+        const progress = this.query.selectProgress(userId, courseId);
+        const incompleteLessons = progress.filter((item) => !item.completed);
+        if (progress.length > 0 && incompleteLessons.length === 0) {
+          const certificate = this.query.insertCertificate(userId, courseId);
+          if (!certificate) {
+            throw new RouteError(400, "Erro ao Gerar certificado");
+          }
+          res.status(201).json({
+            certificate: certificate.id,
+            title: "Aula concluída",
+          });
+          return;
+        }
+
         res.status(201).json({ title: "Aula concluída" });
       } catch (erro) {
         res.status(400).json({
+          certificate: null,
           title: "Erro ao completar aula",
         });
       }
@@ -223,6 +238,23 @@ export class LmshApi extends Api {
         throw new RouteError(400, "Erro ao resetar curso");
       }
       res.status(201).json("curso resetado");
+    },
+
+    getCertificates: (req, res) => {
+      const userId = 1;
+      const certificates = this.query.selectCertificates(userId);
+      if (certificates.length === 0) {
+        throw new RouteError(400, "Nenhum certificado encontrado");
+      }
+      res.status(200).json(certificates);
+    },
+    getCertificate: (req, res) => {
+      const { id } = req.params;
+      const certificate = this.query.selectCertificate(id);
+      if (!certificate) {
+        throw new RouteError(400, "Certificado não encontrado");
+      }
+      res.status(200).json(certificate);
     },
   } satisfies Api["handlers"];
 
@@ -258,6 +290,8 @@ export class LmshApi extends Api {
       this.handlers.getLesson,
     );
     this.router.post("/lms/lesson/complete", this.handlers.completeLesson);
+    this.router.get("/lms/certificates", this.handlers.getCertificates);
+    this.router.get("/lms/certificate/:id", this.handlers.getCertificate);
   }
 }
 

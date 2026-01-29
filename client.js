@@ -180,8 +180,8 @@ const functions = {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        courseId: 1,
-        lessonId: 1,
+        courseId: process.argv[3],
+        lessonId: process.argv[4],
       }),
     });
     const body = await response.json();
@@ -196,6 +196,21 @@ const functions = {
       body: JSON.stringify({
         courseId: 1,
       }),
+    });
+    const body = await response.json();
+    console.log(body);
+  },
+
+  async getCertificates() {
+    const response = await fetch(base + "/lms/certificates", {
+      method: "GET",
+    });
+    const body = await response.json();
+    console.log(body);
+  },
+  async getCertificate() {
+    const response = await fetch(base + "/lms/certificate/" + process.argv[3], {
+      method: "GET",
     });
     const body = await response.json();
     console.log(body);
